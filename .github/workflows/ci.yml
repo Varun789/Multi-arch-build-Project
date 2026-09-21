@@ -5,7 +5,8 @@ on:
         branches:
             - main
     pull_request:
-        branches: - main
+        branches: 
+            - main
 
 env: 
  REGISTRY: docker.io 
@@ -43,7 +44,8 @@ env:
     - name: Docker metadata 
       id: meta 
       uses: docker/metadata-action@v5 
-      with: images: ${{ env.IMAGE_NAME }} 
+      with: 
+        images: ${{ env.IMAGE_NAME }} 
       
       tags: | 
         type=ref,event=branch 
