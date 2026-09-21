@@ -1,0 +1,73 @@
+name: Build and Push Docker Image
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches: - main
+
+env: 
+ REGISTRY: docker.io 
+ IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/python-project
+
+ jobs: 
+  build-and-push: 
+#os on which it will run in github-server
+   runs-on: ubuntu-latest 
+
+# This is a fundamental security best practice aligned with the principle of least privilege, ensuring that the automation runner can look at the code but cannot modify it or push malicious changes back to your repository
+   permissions: 
+    contents: read 
+    
+   steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU 
+      uses: docker/setup-qemu-action@v3
+      with: 
+        platforms: all
+
+    - name: Set up Docker Buildx 
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub 
+      if: github.event_name != 'pull_request' 
+      uses: docker/login-action@v3 
+      with: 
+        registry: ${{ env.REGISTRY }} 
+        username: ${{ secrets.DOCKERHUB_USERNAME }} 
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+#generate metadata
+    - name: Docker metadata 
+      id: meta 
+      uses: docker/metadata-action@v5 
+      with: images: ${{ env.IMAGE_NAME }} 
+      
+      tags: | 
+        type=ref,event=branch 
+        type=ref,event=tag 
+        type=sha,prefix=sha- 
+        type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image 
+      uses: docker/build-push-action@v6 
+      with: 
+        context: . 
+        file: ./Dockerfile 
+        platforms: | 
+          linux/amd64 
+          linux/arm64
+
+        push: ${{ github.event_name != 'pull_request' }} 
+        
+#use the generated Docker tags from the step named 'meta'.
+        tags: ${{ steps.meta.outputs.tags }} 
+        labels: ${{ steps.meta.outputs.labels }}
+
+
+#Tells BuildKit to look for existing cache layers in the GitHub Actions cache when starting a build.
+        cache-from: type=gha
+#Tells BuildKit to export all generated cache layers—including intermediate build stages—back to the GitHub Actions cache when the build finishes
+        cache-to: type=gha,mode=max
