@@ -13,6 +13,7 @@ env:
  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/python-project
 
  jobs: 
+ 
   build-and-push: 
 #os on which it will run in github-server
    runs-on: ubuntu-latest 
