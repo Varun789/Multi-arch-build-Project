@@ -1,4 +1,4 @@
-### Multiarchitecture build using githunactions
+### Multiarchitecture build using githubactions
 
 This is a Python Project to learn Docker BuildKit/Buildx, multi-stage builds, multi-architecture images, image optimization, non-root containers, health checks, build caching, CI/CD-oriented container practices,
 and GitHub Action workflow .
